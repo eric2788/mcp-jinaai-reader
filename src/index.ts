@@ -121,6 +121,12 @@ class JinaReaderServer {
 									type: 'boolean',
 									description: 'Include iframe content in response',
 								},
+								returned_format: {
+									type: 'string',
+									description: 'Specify how the content should be formatted for LLM processing. Use "markdown" for maintaining document structure and formatting (best for tasks requiring context awareness), "text" for clean plain text (best for straightforward QA), or "html" for HTML structure analysis.',
+									enum: ['markdown', 'text', 'html'],
+									default: 'markdown'
+								}
 							},
 							required: ['url'],
 						},
@@ -208,6 +214,9 @@ class JinaReaderServer {
 						args.with_iframe
 					) {
 						headers['X-With-Iframe'] = 'true';
+					}
+					if (typeof args.returned_format === 'string') {
+						headers['X-Returned-Format'] = args.returned_format;
 					}
 
 					const response = await fetch(this.base_url + args.url, {
