@@ -19,10 +19,8 @@ const pkg = JSON.parse(
 );
 const { name, version } = pkg;
 
-const JINAAI_API_KEY = process.env.JINAAI_API_KEY;
-if (!JINAAI_API_KEY) {
-	throw new Error('JINAAI_API_KEY environment variable is required');
-}
+const JINAAI_API_KEY = process.env.JINA_API_KEY;
+const JINAAI_BASE_URL = process.env.JINA_BASE_URL ?? 'https://r.jina.ai/';
 
 const is_valid_url = (url: string): boolean => {
 	try {
@@ -35,7 +33,7 @@ const is_valid_url = (url: string): boolean => {
 
 class JinaReaderServer {
 	private server: Server;
-	private base_url = 'https://r.jina.ai/';
+	private base_url: string;
 
 	constructor() {
 		this.server = new Server(
@@ -50,6 +48,7 @@ class JinaReaderServer {
 			},
 		);
 
+		this.base_url = JINAAI_BASE_URL;
 		this.setup_handlers();
 
 		this.server.onerror = (error) =>
@@ -164,8 +163,11 @@ class JinaReaderServer {
 								? 'text/event-stream'
 								: 'application/json',
 						'Content-Type': 'application/json',
-						Authorization: `Bearer ${JINAAI_API_KEY}`,
 					};
+
+					if (JINAAI_API_KEY) {
+						headers['Authorization'] = `Bearer ${JINAAI_API_KEY}`;
+					}
 
 					// Optional headers from documentation
 					if (typeof args.no_cache === 'boolean' && args.no_cache) {
